@@ -2,13 +2,13 @@ Please note that this was (deliberately) produced using the ELM interface to Cha
 
 I avoided manual tweaking where I could instead ask the model to do things.
 
-Two program files:
+### Two program files:
 
-main.py takes a path to a PDF file as input, decomposes that PDF to extract text and images, then uploads the contents through the openai API and asks a set of queries about it. Modify the query text in main.py as needed. The result will be an html report, saved alongside the original PDF.
+main.py takes a path to a PDF file as input, decomposes that PDF to extract text and images, then uploads the contents through the openai API and asks for solutions to the questions. Optionally provide a second PDF path as an answer sheet to the questions in the first PDF. Modify the query text in main.py as needed. The result will be an html report, saved alongside the original PDF.
 
 debug.py simply runs the PDF decomposition to check which images (if any) were extracted - again provide it with a path to the PDF.
 
-Other files:
+### Other files:
 
 html_report.py is pretty simple, and just produces a neat output for the responses
 
