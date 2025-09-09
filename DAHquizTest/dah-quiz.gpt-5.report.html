@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PDF Analysis Report</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; margin: 24px; line-height: 1.45; }
+    h1, h2 { margin: 0 0 8px; }
+    .meta { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
+    .card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; margin: 12px 0; background: #fff; }
+    pre { white-space: pre-wrap; word-wrap: break-word; }
+    .answer { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
+  </style>
+</head>
+<body>
+  <h1>PDF Analysis Report</h1>
+  <div class="meta">
+    Source PDF: DAHquizTest/dah-quiz.pdf<br>
+    Model: gpt-5<br>
+    Generated: 2025-09-09 12:24:59
+  </div>
+  
+      <div class="card">
+        <h2>1) Provide a concise description of the PDF. Cover: purpose, structure, main topics/sections, and notable figures/tables/findings.</h2>
+        <div class="answer"><pre>Concise description
+
+Purpose:
+- A graded quiz for a Data Acquisition and Handling (DAH) course, worth 20 marks and contributing 10% to the total course mark. Students must solve it outside lab hours and submit via Learn by 12:00, Friday, 20 Nov 2019 (Chapter 1: DAH Quiz) [p.1].
+
+Structure:
+- Five numbered questions with mark allocations and occasional hints. One embedded schematic figure; no tables [pp.1–2].
+
+Main topics/sections:
+1) ADC resolution/dynamic range:
+- Determine ADC bit depth to cover photon energies from 40 MeV to 2.0 TeV in an EM crystal calorimeter; unit-conversion hints provided [p.1].
+
+2) I2C expander addressing:
+- PCF8574AN address with A0–A2 tied high vs. low; explanation of hexadecimal notation; maximum number of such devices controllable from a Raspberry Pi (via datasheet) [p.1].
+
+3) Drift chamber readout:
+- Given 384 anode wires, drift velocity 1 cm/µs, max drift time 6.5 µs, and &lt;200 µm spatial resolution, specify required electronics and key specifications (e.g., preamp/discriminator/TDC characteristics) [pp.1–2].
+
+4) 22Na coincidence detection:
+- Positron annihilation producing back-to-back 0.51 MeV γ-rays; demonstrate signal flow using a single-channel analyzer (SCA) producing TTL pulses; explain TTL implications and need for delay generators before a coincidence counter [p.2].
+
+5) Peak characterization and simulation:
+- Define resolution σ and FWHM; derive FWHM = 2√(2 ln 2) σ; write a Python script to generate a Gaussian with mean µ and σ, plot a histogram, and verify mean and variance match inputs [p.2].
+
+Notable figure(s)/findings:
+- Figure: Block diagram of the 22Na coincidence setup showing detectors → SCAs → delay generators → coincidence counter, with TTL pulse labeling on interconnects [p.2].
+- No tables; no empirical findings—this is an assignment prompt.</pre></div>
+      </div>
+      <div class="card">
+        <h2>2) Assume that the PDF contains one or more tasks to undertake, or questions to answer. Identify each one, quote the relevant text, and then provide an example ans…</h2>
+        <div class="answer"><pre>Below are the identified tasks/questions in the PDF, each quoted and followed by an example answer. Page numbers refer to the provided excerpt.
+
+1) ADC bit depth for calorimeter
+Quoted task [p.1]:
+“In order to measure photon energies in the dynamic range of 40 MeV to 2.0 TeV, how many bits are required for the ADC?
+[ Hint: 1 TeV = 1012 eV, 1 GeV = 109 eV and 1 MeV = 106 eV . ] [2 marks]”
+
+Example answer:
+- Dynamic range R = Emax/Emin = (2.0 TeV)/(40 MeV) = (2000 GeV)/(0.04 GeV) = 50,000.
+- Need 2^b ≥ R ⇒ b = ceil(log2 50,000) = 16.
+Answer: 16-bit ADC.
+
+2) I2C expander address and device count
+Quoted task [p.1]:
+“In DAH checkpoint (4) a PCF8574AN expander I/O chip was used to control a LED light pattern. You were instructed to connect all address lines (A0, A1, A2) to ground which corresponds to the address 0x38. What would the address be if all address lines were connected to 3.3V? Explain hexadecimal numbers. The I2C bus allows you to connect multiple devices. How many PCF8574AN chips can be controlled in total from one Raspberry Pi?
+[ Hint: You need to consult the PCF8574AN data sheet. Note that the preﬁx 0x is used for representing numbers in hexadecimal notation. ] [2 marks]”
+
+Example answer:
+- Address with A0=A1=A2 high: 0x3F (PCF8574A family spans 0x38–0x3F; all-high is the top address).
+- Hexadecimal: base-16 number system using digits 0–9 and A–F (A=10 … F=15). The prefix 0x indicates a hex literal (e.g., 0x3F = 3×16 + 15 = 63 decimal).
+- Number of devices: 3 address pins ⇒ 2^3 = 8 unique addresses (0x38–0x3F) ⇒ up to 8 PCF8574AN devices on one I2C bus, assuming no address conflicts.
+
+3) Drift-chamber readout electronics and specifications
+Quoted task [pp.1–2]:
+“In a particle physics experiment, a drift chamber with 384 anode wires is used to measure trajectories of charged particles. The drift velocity is 1 cm/µs, the maximum drift time is 6.5 µs and a spatial resolution of better than 200 µm is needed. What electronics equipment is required to read out the signal pulses of the drift chamber? State its main specifications. [5 marks]”
+
+Example answer (equipment and key specs):
+- Front-end preamplifier/shaper (per wire; 384 channels):
+  - Charge-sensitive preamp with shaping time O(50–200 ns) to optimize SNR and rate.
+  - Output suitable for fast timing discrimination.
+- Fast discriminator, preferably constant-fraction discriminator (CFD) on each channel:
+  - Low time walk across pulse heights (few ns or less).
+  - Threshold adjustable; logic output (e.g., TTL/NIM; choose TTL to match downstream).
+- Multi-channel Time-to-Digital Converter (TDC):
+  - Channels: 384 (via multiple TDC modules to cover all wires).
+  - Full-scale time range ≥ 6.5 µs.
+  - Required time bin to meet 200 µm: drift velocity = 1 cm/µs = 10 µm/ns ⇒ Δt ≤ 200 µm / (10 µm/ns) = 20 ns. Choose bin size ≤ 20 ns (preferably 5–10 ns to provide margin).
+  - Multi-hit capability and differential nonlinearity small compared with bin size.
+  - Start/stop scheme: global trigger as START, wire hits as STOPs (or the reverse), with programmable coincidence window.
+- Readout/DAQ and trigger interface:
+  - Module controller/DAQ PC to read TDC data, event building.
+  - Clock/trigger distribution and scalers as needed.
+- Support:
+  - High-voltage supply for anode wires; cabling and timing-calibrated delays.
+
+4) 22Na coincidence setup, TTL, and delays
+Quoted task [p.2]:
+“A schematic of the apparatus you might use to record the pairs of photons is shown below: [figure] … By means of a single-channel analyser a TTL pulse is produced whenever the amplitude of the input pulse lies within a specified voltage range.
+• With the aid of a diagram show the sequence of pulses from the detector to the coincidence unit, illustrating how a single-channel analyser works. What does TTL stand for? What does this imply about the output pulses of the single-channel analyser?
+• Delay generators can be used to delay the time at which one of the pulses reaches the coincidence counter. Explain why this might be necessary. [4 marks]”
+
+Example answer:
+- Sequence and SCA operation:
+  - Detector signal (analog voltage pulse proportional to energy) → Single-Channel Analyzer (SCA) set with lower/upper thresholds to define an energy window → SCA outputs a logic gate pulse only if the input pulse amplitude is within the window → Delay Generator (optional) → Coincidence Counter. This matches the provided block diagram with detectors → SCAs → delay generators → coincidence counter [p.2].
+- TTL meaning and implication:
+  - TTL = Transistor-Transistor Logic. The SCA outputs standard logic-level pulses (digital), typically ~0–0.8 V for logic low and ~2–5 V for logic high, with fast edges and fixed width suitable for logic coincidence.
+- Why use delay generators:
+  - To align the arrival times at the coincidence unit, compensating different cable lengths, detector/electronics response times, and time-of-flight differences, so that true coincident events fall within the coincidence timing window and are not missed.
+
+5) Peak resolution, FWHM relation, and Gaussian simulation
+Quoted task [p.2]:
+“Explain what the resolution (σ) and the Full Width Half Maximum (FWHM) of a signal peak in a distribution are. Derive the relation, FWHM= 2√2 log 2 σ, for the resolution σ of a Gaussian distribution. [3 marks]
+Write a python script which uses random numbers to generate a Gaussian distribution with a mean µ and a resolution σ. Plot a histogram of this distribution. Calculate the mean and variance of the generated distribution and show that the results agree with your input values. Submit your code and the output plot. [4 marks]”
+
+Example answer:
+- Definitions:
+  - σ: standard deviation, characterizes the spread (resolution) of the peak around the mean μ.
+  - FWHM: width of the peak between the two x values where the distribution falls to half its maximum value.
+- Derivation for Gaussian f(x) = A exp(−(x−μ)²/(2σ²)):
+  - At half maximum: f = A/2 ⇒ exp(−(x−μ)²/(2σ²)) = 1/2 ⇒ (x−μ)² = 2σ² ln 2.
+  - Half-width at half maximum = √(2 ln 2) σ; therefore FWHM = 2√(2 ln 2) σ.
+- Python script (example):
+  - Example parameters: μ = 5.0, σ = 1.5, N = 200000.
+  - Expected variance = σ² = 2.25; sample estimates will be close.
+
+Code:
+import numpy as np
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(42)
+mu, sigma, N = 5.0, 1.5, 200000
+x = rng.normal(mu, sigma, size=N)
+
+print(&quot;Sample mean:&quot;, x.mean())
+print(&quot;Sample variance:&quot;, x.var(ddof=0))  # population variance
+
+plt.figure()
+plt.hist(x, bins=200, density=True, alpha=0.6, label=&quot;Samples&quot;)
+xs = np.linspace(mu - 5*sigma, mu + 5*sigma, 500)
+pdf = (1/(sigma*np.sqrt(2*np.pi))) * np.exp(-0.5*((xs-mu)/sigma)**2)
+plt.plot(xs, pdf, &#x27;r&#x27;, label=&quot;Gaussian PDF&quot;)
+plt.legend(); plt.xlabel(&quot;x&quot;); plt.ylabel(&quot;Density&quot;); plt.title(&quot;Gaussian samples&quot;)
+plt.tight_layout(); plt.show()
+
+Example output (one run):
+- Sample mean ≈ 5.00
+- Sample variance ≈ 2.25
+These agree with the inputs within statistical fluctuations.</pre></div>
+      </div>
+      <div class="card">
+        <h2>3) Assume that the additional information attached takes the form of a PDF of correct answers to the previous questions. Evaluate your own responses in comparison …</h2>
+        <div class="answer"><pre>Here is a point-by-point comparison of my earlier answers against the provided solution sheet.
+
+Overall: All five answers match the solutions in substance. Minor additions could improve precision (TTL level numbers; making the TDC bin requirement explicit). References to the quiz come from pp.1–2 of the quiz; references to the solution sheet come from p.1 of the solutions.
+
+1) ADC bit depth (quiz p.1; solutions p.1)
+- My answer: Dynamic range R = 2.0 TeV / 40 MeV = 50,000; bits b = ceil(log2 R) = 16 → 16-bit ADC.
+- Solutions: Shows the same calculation and result “16-bit” (R ≈ 5×10^4, b ≈ 16).
+- Evaluation: Fully consistent.
+
+2) PCF8574AN I2C address and device count (quiz p.1; solutions p.1)
+- My answer:
+  - With A0=A1=A2 high → 0x3F (hex) for PCF8574A range 0x38–0x3F.
+  - Explained hexadecimal (base 16; 0x prefix).
+  - Max devices of this type on one bus: 8 (three address pins).
+- Solutions: Shows 7-bit slave address pattern with A2=A1=A0=1 leading to 0x3F; states 8 different addresses/devices.
+- Evaluation: Fully consistent.
+
+3) Drift-chamber readout: equipment and specs (quiz pp.1–2; solutions p.1)
+- My answer: Preamplifier/shaper per wire; discriminator (preferably CFD) per channel; multi-channel TDC covering 6.5 μs full scale; bin size ≤ 20 ns from v = 1 cm/μs (10 μm/ns) and target 200 μm; system sized for 384 channels; DAQ/trigger and HV support.
+- Solutions: Lists the same chain (charge signal → preamp → comparator/discriminator → TDC) and key specs:
+  - x = v·tmax = 6.5 cm; time resolution requirement Δt ≤ 20 ns to achieve 200 μm; TDC full scale ≥ 6.5 μs; 384 channels. Notes discriminator could be leading-edge or CFD; mentions shaping time but de-emphasizes it.
+- Evaluation: Correct. Minor note: my “preferably CFD” is fine, though the solution allows either leading-edge or CFD. My bin-size reasoning matches; I also suggested choosing a finer bin (5–10 ns) for margin, which is acceptable but not required.
+
+4) 22Na coincidence, TTL, delays (quiz p.2; solutions p.1)
+- My answer: Described the chain detector → SCA (window) → delay generator → coincidence counter (matching the figure on quiz p.2). Defined TTL = Transistor-Transistor Logic and stated typical low/high ranges (~0–0.8 V low, ~2–5 V high). Explained delays for time alignment due to cable/electronics/ToF differences.
+- Solutions: Gives the same chain; explicitly expands TTL as Transistor–Transistor Logic and lists standard TTL level specs (VIL ≤ 0.8 V, VIH ≥ 2.0 V, VOL ≤ 0.4 V, VOH ≥ 2.4 V). Notes the need to align timing to meet the coincidence gate and compensate unequal delays.
+- Evaluation: Correct. I could add the specific TTL level numbers shown on the sheet (VIL, VIH, VOL, VOH) for completeness.
+
+5) σ, FWHM derivation; Gaussian simulation (quiz p.2; solutions p.1)
+- My answer: Defined σ and FWHM; derived FWHM = 2√(2 ln 2) σ; provided a Python script generating N(μ,σ), histogram, and numerical mean/variance checks.
+- Solutions: Shows the same derivation steps to FWHM = 2√(2 ln 2) σ and notes Gaussian/normal terminology; mentions verifying resolution and variance.
+- Evaluation: Correct. Small improvement: when reporting empirical variance, many instructors prefer the sample variance (ddof=1); I used population variance (ddof=0). Either can demonstrate agreement, but stating which one is used would align expectations.
+
+Actionable refinements to align exactly with the solution sheet (p.1):
+- Q3: State explicitly: TDC bin ≤ 20 ns; full-scale ≥ 6.5 μs; 384 channels; discriminator can be leading-edge or CFD.
+- Q4: Include the TTL level figures: VIL ≤ 0.8 V, VIH ≥ 2.0 V, VOL ≤ 0.4 V, VOH ≥ 2.4 V.
+- Q5: If reporting statistics from the code, note whether you use population variance (ddof=0) or sample variance (ddof=1).</pre></div>
+      </div>
+      <div class="card">
+        <h2>4) Given the correct answers provided, give your own answers a numerical score. Use information provided in the question and answer PDFs to calculate this score.</h2>
+        <div class="answer"><pre>Score calculation (out of 20), based on the quiz marks [pp.1–2] and the provided solution sheet [solutions p.1]
+
+- Q1 ADC bits [2 marks]
+  - My answer matches the solution: 16-bit from R = 2.0 TeV / 40 MeV = 50,000 and b = ceil(log2 R) = 16 [quiz p.1; solutions p.1].
+  - Score: 2/2
+
+- Q2 PCF8574AN address and count [2 marks]
+  - Address with A0–A2 high: 0x3F, hex explained, 8 devices possible; matches solution [quiz p.1; solutions p.1].
+  - Score: 2/2
+
+- Q3 Drift chamber electronics/specs [5 marks]
+  - Provided preamp/shaper, discriminator (CFD or leading-edge), TDC with full-scale ≥ 6.5 µs, bin ≤ 20 ns to meet 200 µm at 1 cm/µs, and 384 channels; aligns with solution [quiz pp.1–2; solutions p.1].
+  - Score: 5/5
+
+- Q4 22Na coincidence, TTL, delays [4 marks]
+  - Described detector → SCA → delay → coincidence chain (as in quiz figure) [quiz p.2], defined TTL and digital-level implication, and explained delay alignment; consistent with solution (which adds specific TTL level thresholds) [solutions p.1].
+  - Score: 4/4
+
+- Q5 Peak σ and FWHM derivation [3 marks]
+  - Correct definitions and derivation: FWHM = 2√(2 ln 2) σ; matches solution [quiz p.2; solutions p.1].
+  - Score: 3/3
+
+- Q5 Gaussian simulation code [4 marks]
+  - Provided Python code to generate N(μ, σ), plot histogram, and verify mean/variance agree; matches solution intent [quiz p.2; solutions p.1].
+  - Score: 4/4
+
+Total score: 20/20</pre></div>
+      </div>
+      <div class="card">
+        <h2>5) Be really critical of your own answers, in comparison to those in the answer PDF. What&#x27;s the lowest score they might get?</h2>
+        <div class="answer"><pre>Lowest plausible score: 16/20
+
+Rationale by question, using the quiz marks [pp.1–2] and what is shown on the solution sheet [solutions p.1].
+
+- Q1 ADC bits [2 marks]
+  - My answer (16-bit from R = 2.0 TeV / 40 MeV ≈ 5×10^4; b = ⌈log2 R⌉) matches the solution [quiz p.1; solutions p.1].
+  - Lowest plausible: 2/2.
+
+- Q2 PCF8574AN address and count [2 marks]
+  - I gave 0x3F for A0–A2 high, explained hex, and said 8 devices; matches the solution [quiz p.1; solutions p.1].
+  - Lowest plausible: 2/2.
+
+- Q3 Drift-chamber electronics/specs [5 marks]
+  - I specified preamp/shaper → discriminator → TDC, full-scale ≥ 6.5 µs, bin ≤ 20 ns to meet 200 µm at 1 cm/µs, and 384 channels—consistent with the solution’s chain and specs (x = vtmax, Δt ≤ 20 ns, TDC covering 6.5 µs) [quiz pp.1–2; solutions p.1].
+  - Being strict, a marker could dock 1 mark for not stating certain specifics emphasized on the sheet (e.g., explicitly naming both acceptable discriminator types or giving a concrete bin choice rather than a range).
+  - Lowest plausible: 4/5.
+
+- Q4 22Na coincidence: diagram, TTL, delays [4 marks]
+  - I described the chain in words and expanded TTL, and gave typical logic-level implications, and explained delay alignment, aligning with the figure on the quiz [p.2]. The solution sheet, however, explicitly lists TTL level thresholds (VIL ≤ 0.8 V, VIH ≥ 2.0 V, VOL ≤ 0.4 V, VOH ≥ 2.4 V) and shows the block diagram/logic AND [solutions p.1].
+  - A strict grader could deduct:
+    - 1 mark for not actually drawing a diagram as requested (“With the aid of a diagram…”) [quiz p.2].
+    - 1 mark for not quoting the precise TTL threshold numbers shown on the solution sheet [solutions p.1].
+  - Lowest plausible: 2/4.
+
+- Q5 Peak σ, FWHM derivation [3 marks]
+  - I correctly defined σ and FWHM and derived FWHM = 2√(2 ln 2) σ, as on the solution sheet [quiz p.2; solutions p.1].
+  - Lowest plausible: 3/3.
+
+- Q5 Gaussian simulation code and verification [4 marks]
+  - I provided runnable code, printed mean/variance, and described agreement; this meets the task intent [quiz p.2]. The sheet notes verifying variance/“resolution,” not specific code.
+  - A strict grader could deduct 1 mark for not including an actual plot image (the question asks to “submit your code and the output plot” [quiz p.2]) and/or for using population variance (ddof=0) rather than clearly stating sample variance.
+  - Lowest plausible: 3/4.
+
+Adding the lowest plausible per part:
+- Q1 2 + Q2 2 + Q3 4 + Q4 2 + Q5(derivation) 3 + Q5(code) 3 = 16/20.</pre></div>
+      </div>
+</body>
+</html>

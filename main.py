@@ -35,7 +35,10 @@ def main():
         print("Error: Missing OPENAI_API_KEY environment variable.")
         sys.exit(1)
 
-    model = os.environ.get("OPENAI_MODEL", "gpt-4o")
+    model = os.environ.get("OPENAI_MODEL", "gpt-4o") #suggested temperature was 0.2
+    temperature = 0.2
+    #model = os.environ.get("OPENAI_MODEL", "gpt-5") #can only use default temperature (1)
+    #temperature = 1
     client = OpenAI(api_key=api_key)
 
     # 1) Decompose the PDF locally
@@ -62,7 +65,7 @@ def main():
     messages = [{"role": "system", "content": system_prompt}]
 
     def ask(query_text: str, attached_pdf: DecomposedPDF=None) -> str:
-        nonlocal messages
+        nonlocal messages, temperature
         if attached_pdf is not None:
             # First turn: include the decomposed text excerpt and visuals
             user_parts = attached_pdf.build_user_parts(
@@ -77,7 +80,7 @@ def main():
         resp = client.chat.completions.create(
             model=model,
             messages=messages,
-            temperature=0.2,
+            temperature=temperature,
         )
         answer = resp.choices[0].message.content or ""
         # Append assistant turn to keep context
@@ -87,9 +90,11 @@ def main():
     # 3) Ask any number of questions
     questions = []
     questions.append( [ "Provide a concise description of the PDF. Cover: purpose, structure, main topics/sections, and notable figures/tables/findings.", questionDP ] )
-    questions.append( [ "Assume that the PDF contains one or more tasks to undertake, or questions to answer. Identify each one, quote the relevant text, and then provide an example answer." ] )
+    questions.append( [ "Assume that the PDF contains one or more tasks to undertake, or questions to answer. Identify each one, quote the relevant text, and then provide an example answer. If the questions have multiple parts, identify each part and provide a specific answer." ] )
     if answerDP is not None:
-      questions.append( [ "Assume that the additional information attached takes the form of answers to the previous questions. Evaluate your own responses in comparison with these answers provided.", answerDP ] )
+      questions.append( [ "Assume that the additional information attached takes the form of a PDF of correct answers to the previous questions. Evaluate your own responses in comparison with these answers provided.", answerDP ] )
+      questions.append( [ "Given the correct answers provided, give your own answers a numerical score. Use information provided in the question and answer PDFs to calculate this score." ] )
+      questions.append( [ "Be really critical of your own answers, in comparison to those in the answer PDF. What's the lowest score they might get?" ] )
 
     answers = []
     questionText = []
